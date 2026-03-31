@@ -1,3 +1,7 @@
+# ===== SET WINDOW SIZE =====
+$Host.UI.RawUI.WindowSize = New-Object Management.Automation.Host.Size(80, 25)
+$Host.UI.RawUI.BufferSize = New-Object Management.Automation.Host.Size(80, 25)
+
 Clear-Host
 
 # ===== HEADER =====
