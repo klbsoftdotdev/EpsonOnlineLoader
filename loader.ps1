@@ -14,23 +14,15 @@ function Pause {
 }
 
 # ===== TOOLS LIST =====
-# Add your tools here, pointing to GitHub release URLs
+# Add your tools here, pointing to GitHub releases
 $tools = @(
-    @{
-        Name = "USBFix"
-        Url  = "https://github.com/klbsoftdotdev/EpsonResetterOnline/releases/download/v1.0/USBFix.exe"
-        File = "USBFix.exe"
-        Type = "exe"
-    },
-    @{
-        Name = "MyArchiveTool"
-        Url  = "https://github.com/<username>/<repo>/releases/download/v1.0/ToolsArchive.zip"
-        File = "ToolsArchive.zip"
-        Type = "zip"
-    }
+    @{Name="USBFix"; Url="https://github.com/<username>/<repo>/releases/download/v1.0/USBFix.exe"; File="USBFix.exe"; Type="exe"},
+    @{Name="Tool 2"; Url="https://github.com/<username>/<repo>/releases/download/v1.0/Tool2.exe"; File="Tool2.exe"; Type="exe"},
+    @{Name="Tool 3"; Url="https://github.com/<username>/<repo>/releases/download/v1.0/Tool3.zip"; File="Tool3.zip"; Type="zip"},
+    # Add as many as you want
 )
 
-# ===== DOWNLOAD FUNCTION =====
+# ===== DOWNLOAD + RUN =====
 function Download-Tool($tool) {
 
     $OutDir = "$env:USERPROFILE\Downloads\ToolLoader"
@@ -68,7 +60,6 @@ function Download-Tool($tool) {
             [System.IO.Compression.ZipFile]::ExtractToDirectory($OutFile, $ExtractDir)
             Write-Host "[+] Extraction complete." -ForegroundColor Green
 
-            # Optional: Run first .exe in archive automatically
             $exe = Get-ChildItem -Path $ExtractDir -Filter *.exe -Recurse | Select-Object -First 1
             if ($exe) {
                 Write-Host "[+] Running $($exe.Name) from archive..." -ForegroundColor Cyan
@@ -85,21 +76,30 @@ function Download-Tool($tool) {
     Pause
 }
 
-# ===== MENU =====
+# ===== PAGED MENU =====
+$pageSize = 10
+$page = 0
+$totalPages = [math]::Ceiling($tools.Count / $pageSize)
+
 while ($true) {
     Clear-Host
     Show-Header
+    Write-Host "TOOLS MENU (Page $($page+1)/$totalPages)" -ForegroundColor Green
 
-    for ($i = 0; $i -lt $tools.Count; $i++) {
+    $start = $page * $pageSize
+    $end = [math]::Min($start + $pageSize - 1, $tools.Count - 1)
+
+    for ($i = $start; $i -le $end; $i++) {
         Write-Host "$($i+1). $($tools[$i].Name)"
     }
-    Write-Host "0. Exit"
 
-    $choice = Read-Host "`nSelect tool"
+    Write-Host "`nn. Next page | p. Previous page | 0. Exit"
+    $choice = Read-Host "Select tool"
 
     if ($choice -eq "0") { break }
-
-    if ($choice -match "^\d+$") {
+    elseif ($choice -eq "n" -and $page -lt $totalPages - 1) { $page++ }
+    elseif ($choice -eq "p" -and $page -gt 0) { $page-- }
+    elseif ($choice -match "^\d+$") {
         $index = [int]$choice - 1
         if ($index -ge 0 -and $index -lt $tools.Count) {
             Download-Tool $tools[$index]
