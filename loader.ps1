@@ -14,22 +14,31 @@ function Pause {
 }
 
 # ===== TOOLS LIST =====
-# Add your tools here, pointing to GitHub releases
+# ✅ Make sure no comma after the last item
 $tools = @(
-    @{Name="USBFix"; Url="https://github.com/<username>/<repo>/releases/download/v1.0/USBFix.exe"; File="USBFix.exe"; Type="exe"},
-    @{Name="Tool 2"; Url="https://github.com/<username>/<repo>/releases/download/v1.0/Tool2.exe"; File="Tool2.exe"; Type="exe"},
-    @{Name="Tool 3"; Url="https://github.com/<username>/<repo>/releases/download/v1.0/Tool3.zip"; File="Tool3.zip"; Type="zip"},
-    # Add as many as you want
+    @{
+        Name = "USBFix"
+        Url  = "https://github.com/<username>/<repo>/releases/download/v1.0/USBFix.exe"
+        File = "USBFix.exe"
+        Type = "exe"
+    },
+    @{
+        Name = "Tool2"
+        Url  = "https://github.com/<username>/<repo>/releases/download/v1.0/Tool2.zip"
+        File = "Tool2.zip"
+        Type = "zip"
+    }
+    # Last element — NO COMMA!
 )
 
-# ===== DOWNLOAD + RUN =====
+# ===== DOWNLOAD + RUN FUNCTION =====
 function Download-Tool($tool) {
-
     $OutDir = "$env:USERPROFILE\Downloads\ToolLoader"
     if (-not (Test-Path $OutDir)) { New-Item -ItemType Directory -Path $OutDir | Out-Null }
 
     $OutFile = "$OutDir\$($tool.File)"
 
+    # Remove existing file
     if (Test-Path $OutFile) { Remove-Item $OutFile -Force }
 
     Write-Host ""
@@ -70,7 +79,6 @@ function Download-Tool($tool) {
     catch {
         Write-Host "[!] Download or execution failed." -ForegroundColor Red
         Write-Host $_.Exception.Message -ForegroundColor Red
-        Pause
     }
 
     Pause
