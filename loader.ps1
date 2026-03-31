@@ -1,14 +1,10 @@
-# ===== SET WINDOW SIZE =====
-$Host.UI.RawUI.WindowSize = New-Object Management.Automation.Host.Size(80, 25)
-$Host.UI.RawUI.BufferSize = New-Object Management.Automation.Host.Size(80, 25)
-
 Clear-Host
 
 # ===== HEADER =====
 function Show-Header {
-    Write-Host "=========================================" -ForegroundColor Cyan
-    Write-Host "         EPSON RESETTER ONLINE           " -ForegroundColor Cyan
-    Write-Host "=========================================" -ForegroundColor Cyan
+    Write-Host "=====================================" -ForegroundColor DarkCyan
+    Write-Host "         REMOTE TOOL LOADER          " -ForegroundColor Cyan
+    Write-Host "=====================================" -ForegroundColor DarkCyan
     Write-Host ""
 }
 
@@ -18,17 +14,31 @@ function Pause {
 }
 
 # ===== TOOLS LIST =====
+# ✅ Make sure no comma after the last item
 $tools = @(
-    @{Name="USBFix"; Url="https://github.com/klbsoftdotdev/EpsonResetterOnline/releases/download/v1.0/USBFix.exe"; File="USBFix.exe"; Type="exe"},
-    @{Name="Tool2"; Url="https://github.com/<username>/<repo>/releases/download/v1.0/Tool2.zip"; File="Tool2.zip"; Type="zip"}
+    @{
+        Name = "USBFix"
+        Url  = "https://github.com/<username>/<repo>/releases/download/v1.0/USBFix.exe"
+        File = "USBFix.exe"
+        Type = "exe"
+    },
+    @{
+        Name = "Tool2"
+        Url  = "https://github.com/<username>/<repo>/releases/download/v1.0/Tool2.zip"
+        File = "Tool2.zip"
+        Type = "zip"
+    }
+    # Last element — NO COMMA!
 )
 
 # ===== DOWNLOAD + RUN FUNCTION =====
 function Download-Tool($tool) {
-    $OutDir = "$env:USERPROFILE\Downloads\EpsonResetterTools"
+    $OutDir = "$env:USERPROFILE\Downloads\ToolLoader"
     if (-not (Test-Path $OutDir)) { New-Item -ItemType Directory -Path $OutDir | Out-Null }
 
     $OutFile = "$OutDir\$($tool.File)"
+
+    # Remove existing file
     if (Test-Path $OutFile) { Remove-Item $OutFile -Force }
 
     Write-Host ""
@@ -40,7 +50,7 @@ function Download-Tool($tool) {
         Write-Host "[*] Downloaded size: $size bytes"
 
         if ($size -lt 1000) {
-            Write-Host "[!] Downloaded file may be incomplete!" -ForegroundColor Red
+            Write-Host "[!] File too small, download may have failed!" -ForegroundColor Red
             Pause
             return
         }
@@ -61,7 +71,7 @@ function Download-Tool($tool) {
 
             $exe = Get-ChildItem -Path $ExtractDir -Filter *.exe -Recurse | Select-Object -First 1
             if ($exe) {
-                Write-Host "[+] Running $($exe.Name)..." -ForegroundColor Cyan
+                Write-Host "[+] Running $($exe.Name) from archive..." -ForegroundColor Cyan
                 Start-Process -FilePath $exe.FullName -WorkingDirectory $ExtractDir -Wait
             }
         }
@@ -74,23 +84,30 @@ function Download-Tool($tool) {
     Pause
 }
 
-# ===== MENU =====
+# ===== PAGED MENU =====
+$pageSize = 10
+$page = 0
+$totalPages = [math]::Ceiling($tools.Count / $pageSize)
+
 while ($true) {
     Clear-Host
     Show-Header
-    Write-Host "TOOLS MENU" -ForegroundColor Green
-    Write-Host "----------------------------------------" -ForegroundColor DarkGray
+    Write-Host "TOOLS MENU (Page $($page+1)/$totalPages)" -ForegroundColor Green
 
-    for ($i = 0; $i -lt $tools.Count; $i++) {
-        Write-Host "$($i+1). $($tools[$i].Name)" -ForegroundColor White
+    $start = $page * $pageSize
+    $end = [math]::Min($start + $pageSize - 1, $tools.Count - 1)
+
+    for ($i = $start; $i -le $end; $i++) {
+        Write-Host "$($i+1). $($tools[$i].Name)"
     }
 
-    Write-Host "0. Exit" -ForegroundColor Yellow
-    $choice = Read-Host "`nSelect tool"
+    Write-Host "`nn. Next page | p. Previous page | 0. Exit"
+    $choice = Read-Host "Select tool"
 
     if ($choice -eq "0") { break }
-
-    if ($choice -match "^\d+$") {
+    elseif ($choice -eq "n" -and $page -lt $totalPages - 1) { $page++ }
+    elseif ($choice -eq "p" -and $page -gt 0) { $page-- }
+    elseif ($choice -match "^\d+$") {
         $index = [int]$choice - 1
         if ($index -ge 0 -and $index -lt $tools.Count) {
             Download-Tool $tools[$index]
