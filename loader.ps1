@@ -18,7 +18,7 @@ function Pause {
 $tools = @(
     @{
         Name = "USBFix"
-        Url  = "https://github.com/<username>/<repo>/releases/download/v1.0/USBFix.exe"
+        Url  = "https://github.com/klbsoftdotdev/EpsonResetterOnline/releases/download/v1.0/USBFix.exe"
         File = "USBFix.exe"
         Type = "exe"
     },
