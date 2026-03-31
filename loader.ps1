@@ -15,7 +15,7 @@ function Pause {
 
 # ===== TOOLS LIST =====
 $tools = @(
-    @{Name="USBFix"; Url="https://github.com/<username>/<repo>/releases/download/v1.0/USBFix.exe"; File="USBFix.exe"; Type="exe"},
+    @{Name="USBFix"; Url="https://github.com/klbsoftdotdev/EpsonResetterOnline/releases/download/v1.0/USBFix.exe"; File="USBFix.exe"; Type="exe"},
     @{Name="Tool2"; Url="https://github.com/<username>/<repo>/releases/download/v1.0/Tool2.zip"; File="Tool2.zip"; Type="zip"}
 )
 
